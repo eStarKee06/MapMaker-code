@@ -1,0 +1,56 @@
+
+import RPi.GPIO as GPIO
+import time
+ 
+
+GPIO.setmode(GPIO.BOARD)
+ 
+ServoPinL = 7                                  
+ServoPinR = 11     
+GPIO.setup(ServoPinL, GPIO.OUT)                    
+GPIO.setup(ServoPinR, GPIO.OUT)       
+
+
+pwm_freq1 = 50
+pwm_freq0 = 10
+pwm_servoL = GPIO.PWM(ServoPinL, 50)
+pwm_servoR = GPIO.PWM(ServoPinR, 50)
+
+#sets frequency in both wheels
+'''def turn(lFreq, rFreq):
+    pwm_servoL = GPIO.PWM(ServoPinL, lFreq)
+    pwm_servoR = GPIO.PWM(ServoPinR, rFreq)
+    move()
+
+#moves the wheels
+def move():
+    pwm_servoL.start(5)
+    pwm_servoR.start(5)
+    print ("Moving to angle 0")
+    time.sleep(1)
+    '''
+# Main program 
+if __name__ == '__main__':
+
+    try:
+        
+        # This code repeats forever
+        while True:
+            
+            pwm_servoL.start(10)
+            pwm_servoR.start(10)
+            print ("Moving to angle 0")
+            time.sleep(1)
+            
+           ''' pwm_servoL.ChangeDutyCycle(10)
+            pwm_servoR.ChangeDutyCycle(10)
+            print ("Moving to angle 0")
+            time.sleep(1)
+           '''
+
+
+            
+    # Reset by pressing CTRL + C
+    except KeyboardInterrupt:
+        print("Program stopped by User")
+        GPIO.cleanup()
