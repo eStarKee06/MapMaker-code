@@ -1,34 +1,38 @@
+# This program demonstrates how to control a servo
 
+# Import the relevant libraries
 import RPi.GPIO as GPIO
 import time
  
-
+# GPIO Mode (BOARD / BCM)
 GPIO.setmode(GPIO.BOARD)
  
-ServoPinL = 7                                  
-ServoPinR = 11     
-GPIO.setup(ServoPinL, GPIO.OUT)                    
-GPIO.setup(ServoPinR, GPIO.OUT)       
+# set GPIO Pins
+ServoPinL = 7                                       # GPIO pin for the servo
+ServoPinR = 12  
+# set GPIO direction (IN / OUT)
+GPIO.setup(ServoPinL, GPIO.OUT)                      # Set ServoPin's mode to output
+GPIO.setup(ServoPinR, GPIO.OUT)  
+
+# The servo is controlled using Pulse Width Modulation (PWM)
+# The next few lines of code take care of the required setup for this functionality
+# The details are not important; you should not modify this code
+# --- Start of the PWM setup ---
+    # Set PWM parameters
+pwm_frequency = 50
+
+    # Helper function to set the duty cycle
+
+    # Create a PWM instance
+pwm_servoL = GPIO.PWM(ServoPinL, pwm_frequency)
+pwm_servoR = GPIO.PWM(ServoPinR, pwm_frequency)
+
+# --- End of the PWM setup ---
 
 
-pwm_freq1 = 50
-pwm_freq0 = 10
-pwm_servoL = GPIO.PWM(ServoPinL, 50)
-pwm_servoR = GPIO.PWM(ServoPinR, 50)
 
-#sets frequency in both wheels
-'''def turn(lFreq, rFreq):
-    pwm_servoL = GPIO.PWM(ServoPinL, lFreq)
-    pwm_servoR = GPIO.PWM(ServoPinR, rFreq)
-    move()
 
-#moves the wheels
-def move():
-    pwm_servoL.start(5)
-    pwm_servoR.start(5)
-    print ("Moving to angle 0")
-    time.sleep(1)
-    '''
+
 # Main program 
 if __name__ == '__main__':
 
@@ -36,18 +40,13 @@ if __name__ == '__main__':
         
         # This code repeats forever
         while True:
-            
-            pwm_servoL.start(10)
-            pwm_servoR.start(10)
-            print ("Moving to angle 0")
-            time.sleep(1)
-            
-           ''' pwm_servoL.ChangeDutyCycle(10)
-            pwm_servoR.ChangeDutyCycle(10)
-            print ("Moving to angle 0")
-            time.sleep(1)
-           '''
 
+            # Move the servo
+
+            pwm_servoL.start(5)
+            pwm_servoR.start(5)
+            print ("Moving to angle 0")
+            time.sleep(1)
 
             
     # Reset by pressing CTRL + C
