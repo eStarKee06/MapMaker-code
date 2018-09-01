@@ -1,0 +1,73 @@
+ # This program demonstrates how to control a servo
+
+# Import# This program demonstrates how to control a servo
+
+# Import the relevant libraries
+import RPi.GPIO as GPIO
+import time
+ 
+# GPIO Mode (BOARD / BCM)
+GPIO.setmode(GPIO.BOARD)
+ 
+# set GPIO Pins
+ServoPinR = 7                                        # GPIO pin for the servo
+ServoPinL = 12 
+# set GPIO direction (IN / OUT)
+GPIO.setup(ServoPinR, GPIO.OUT)                      # Set ServoPin's mode to output
+GPIO.setup(ServoPinL, GPIO.OUT) 
+
+# The servo is controlled using Pulse Width Modulation (PWM)
+# The next few lines of code take care of the required setup for this functionality
+# The details are not important; you should not modify this code
+# --- Start of the PWM setup ---
+    # Set PWM parameters
+pwm_frequency = 50
+
+
+
+    # Create a PWM instance
+pwm_servoR = GPIO.PWM(ServoPinR, pwm_frequency)
+pwm_servoL = GPIO.PWM(ServoPinL, pwm_frequency)
+# --- End of the PWM setup ---
+
+#def backward():
+ #   move(5, 5, 7.5, 7.5)
+def turnLeft():
+    move(10, 5, 17.5, 7.5)
+def turnRight():
+    move(5, 10, 7.5, 17.5)
+def forward():
+    move(10, 10, 17.5, 17.5)
+
+def move(l, r, l2, r2):
+     pwm_servoL.start(l)
+     pwm_servoR.start(r)
+     print ("Moving to angle 0")
+     time.sleep(1)
+                       
+     pwm_servoL.ChangeDutyCycle(l2)
+     pwm_servoR.ChangeDutyCycle(r2)
+     print ("Moving to angle 360")
+  
+
+
+
+
+
+# Main program 
+if __name__ == '__main__':
+
+    try:
+        
+        # This code repeats forever
+        while True:
+
+            # Move the servo
+            
+            backward()
+           
+         
+    # Reset by pressing CTRL + C
+    except KeyboardInterrupt:
+        print("Program stopped by User")
+        GPIO.cleanup() 
