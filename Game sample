@@ -1,0 +1,56 @@
+from PIL import Image
+import turtle
+
+
+def pathMaker(pathDis, degree):
+    pathWay.forward(pathDis) # put in forward() function after sleep/ function. pathdis is either 100/0
+    pathWay.left(degree) # put in turn functions, degree can either be 90/ -90, 90 when turning left, and -90 when turning right
+    return (pathWay.xcor(), pathWay.ycor())
+
+#setup
+pathWay = turtle.Turtle()
+pathWay.width(10)
+pathWay.pencolor("green")
+pathWay.left(90)
+#end setup
+
+#sample
+coor = list([]) #you need an array to store all the value
+for i in range(2):
+    for a in range(2):
+        coor.append(pathMaker(100, 90))
+
+print(coor)
+#sampleEnd
+
+#2nd Part
+#sort
+def getExtremeVal(arr, stringInf, index): #arr = array with coordinates, stringInf = "inf" if looking for smallest value, 
+    extrCoor = float(stringInf)          #"-inf" if looking for largest value; index = 0, if largest/smallest val for x coordinates 
+    for i in range(len(arr)):
+        if stringInf == "inf":           # index = 1 if largest/smallest val for y coordinates
+            if arr[i][index] <= extrCoor:
+                extrCoor = arr[i][index]
+        else:
+            if arr[i][index] >= extrCoor:
+                extrCoor = arr[i][index]
+    return extrCoor
+
+x1 = abs( (getExtremeVal(coor, "-inf", 0)) ) #-> largest num in array base on x coordinates
+x2 = abs( (getExtremeVal(coor, "inf", 0)) ) #-> smallest num based on x coors
+y1 = abs( (getExtremeVal(coor, "-inf", 1)) ) #-> largest num based on y coors
+y2 = abs( (getExtremeVal(coor, "inf", 1)) ) #-> smallest num based on y coor
+
+gameBk = Image.new("RGB",(2 * int(x1+x2), 2* int(y1+y2))+10, "black")
+
+def transPathtoPic(im, arr):
+    newArr = list()
+    for i in range(len(arr)):
+        newArr.append ( ( 2*abs(arr[i][0]) - (arr[i][0]) ) , ( 2*abs(arr[i][1]) - (arr[i][1]) ) ) 
+    for i in range(len(newArr)):
+        im.putpixel( (newArr[i][0], newArr[i][1]), (0, 255,0) )
+
+    return im
+
+gameMap = transPathtoPic(gameBk, coor)
+gameMap.show()
