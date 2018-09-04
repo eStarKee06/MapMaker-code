@@ -1,0 +1,114 @@
+
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BOARD)
+
+ServoPinR = 7
+ServoPinL = 12
+RTriggerP  = 13
+REchoP     = 15
+FTriggerP  = 16
+FEchoP     = 18
+
+GPIO.setup(ServoPinR, GPIO.OUT)
+GPIO.setup(ServoPinL, GPIO.OUT)
+GPIO.setup(RTriggerP, GPIO.OUT)
+GPIO.setup(REchoP, GPIO.IN)
+GPIO.setup(FTriggerP, GPIO.OUT)
+GPIO.setup(FEchoP, GPIO.IN)
+
+pwm_frequency = 50
+pwm_servoR = GPIO.PWM(ServoPinR, pwm_frequency)
+pwm_servoL = GPIO.PWM(ServoPinL, pwm_frequency)
+
+GPIO.output(RTriggerP, False)
+time.sleep(2)
+GPIO.output(FTriggerP, False)
+time.sleep(2)
+
+
+
+
+def turnLeft():
+    move(5, 5, 7.5, 7.5)
+def forward():
+    move(10, 5, 17.5, 7.5)
+#def turnLeft():
+ #   move(5, 10, 7.5, 17.5)
+def turnRight():
+    move(10, 10, 17.5, 17.5)
+
+def move(l, r, l2, r2):
+     pwm_servoL.start(l)
+     pwm_servoR.start(r)
+     time.sleep(1)
+                       
+     pwm_servoL.ChangeDutyCycle(l2)
+     pwm_servoR.ChangeDutyCycle(r2)
+  
+def distance(trig, echo):
+    GPIO.output(trig, True)
+    time.sleep(0.00001)
+    GPIO.output(trig, False)
+    
+    valid = True
+    RefTime = time.time()
+    StartTime = RefTime
+    while (GPIO.input(echo) == 0) and (StartTime-RefTime < 0.1):
+        StartTime = time.time()
+    if (StartTime-RefTime >= 0.1):
+        valid = False
+ 
+    if (valid):
+        RefTime = time.time()
+        StopTime = time.time()
+        while (GPIO.input(echo) == 1) and (StopTime-RefTime < 0.1):
+            StopTime = time.time()
+        if (StopTime-RefTime >= 0.1):
+            valid = False
+  
+    if (valid):
+        EchoPulseLength = StopTime - StartTime
+        return (EchoPulseLength * 34300) / 2
+    else:
+        return 0
+
+
+
+
+
+if __name__ == '__main__':
+
+    try:
+        state = 1
+        while True:
+            if state == 1:
+                forward()
+                Rdist = distance(RTriggerP, REchoP)
+                print("right hand distance: {0} cm" .format(Rdist))
+               # time.sleep (0.5)
+                Fdist = distance(FTriggerP, FEchoP)
+                print ("front distance:{0} cm".format(Fdist))
+               # time.sleep(0.5)
+
+            if Fdist < 20.0 and Fdist !=  0 and state == 1:
+                if Rdist < 20.0 and Rdist !=  0:
+                    state = 2
+                    turnLeft()
+                 #   time.sleep(0.5)
+                    state = 1
+               
+                else:
+                    state = 3
+                    turnRight()
+                  #  time.sleep(0.5)
+                    state = 1
+            else:
+                state = 1
+
+          
+
+    except KeyboardInterrupt:
+        print("Program stopped by User")
+        GPIO.cleanup()
