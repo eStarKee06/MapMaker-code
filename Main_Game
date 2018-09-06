@@ -1,0 +1,76 @@
+import pygame
+import random
+import sys
+from PIL import Image
+
+backGround = Image.open("gameMap.jpg")
+(x,y) = backGround.size
+
+def safeArr(im):
+    safeArr = list([])
+    for x in range(im.size[0]):
+        for y in range(im.size[1]):
+            g = im.getpixel((x,y))[1]
+            if g == 255:
+                safeArr.append((x,y))
+    return safeArr
+newSafeArr = safeArr(backGround)
+
+pygame.init()
+
+screen = pygame.display.set_mode((x,y))
+backgroundIm = pygame.image.load("gameMap.jpg").convert()
+hero = pygame.image.load("hero.jpg").convert()
+goal = pygame.image.load("goal.jpg").convert()
+screen.blit(backgroundIm, [0,0])
+pos1 = random.choice(newSafeArr)
+screen.blit(goal, [pos1[0], pos1[1]])
+#hero_rect = hero.get_rect()
+vel = 5
+
+pos = random.choice(newSafeArr)
+heroX = pos[0]
+heroY = pos[1]
+Xchange = heroX
+Ychange = heroY
+
+#main loop
+
+while True:
+    for event in pygame.event.get():
+        
+        print(screen.get_at((heroX, heroY)))
+        if screen.get_at((heroX, heroY)) == (0, 0, 0, 255):
+            pygame.quit()
+        screen.blit(hero, [heroX, heroY])
+        screen.fill((0,255,0), ((Xchange, Ychange), (5, 5)))
+        Xchange = heroX
+        Ychange = heroY
+        pygame.display.flip()
+        
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                heroY -= vel
+                Ychange = heroY + 5
+                
+            if event.key == pygame.K_DOWN:
+                heroY += vel
+                Ychange = heroY - 5
+               
+            if event.key == pygame.K_LEFT:
+                heroX -= vel
+                Xchange = heroX + 5
+                
+            if event.key == pygame.K_RIGHT:
+                heroX += vel
+                Xchange = heroX - 5
+                
+        if screen.get_at((heroX, heroY)) == (0, 0, 254, 255):
+            print("THANK YOU FOR PLAYING")
+            pygame.quit()
+
+
+
+      
+        
