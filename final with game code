@@ -1,0 +1,197 @@
+
+import RPi.GPIO as GPIO
+import time
+import turtle
+
+GPIO.setmode(GPIO.BOARD)
+
+ServoPinR = 7
+ServoPinL = 12
+RTriggerP  = 13
+REchoP     = 15
+FTriggerP  = 16
+FEchoP     = 18
+coor = list([])
+
+GPIO.setup(ServoPinR, GPIO.OUT)
+GPIO.setup(ServoPinL, GPIO.OUT)
+GPIO.setup(RTriggerP, GPIO.OUT)
+GPIO.setup(REchoP, GPIO.IN)
+GPIO.setup(FTriggerP, GPIO.OUT)
+GPIO.setup(FEchoP, GPIO.IN)
+
+pwm_frequency = 50
+pwm_servoR = GPIO.PWM(ServoPinR, pwm_frequency)
+pwm_servoL = GPIO.PWM(ServoPinL, pwm_frequency)
+
+GPIO.output(RTriggerP, False)
+time.sleep(2)
+GPIO.output(FTriggerP, False)
+time.sleep(2)
+
+duty_min = 2.5 * float(pwm_frequency) / 50.0
+duty_max = 12.5 * float(pwm_frequency) / 50.0
+
+    # Helper function to set the duty cycle
+def set_duty_cycle(angle):
+    return ((duty_max - duty_min) * float(angle) / 180.0 + duty_min)
+
+
+def turnRight():
+    move(90, 120)
+   
+def forward():
+    move(150, 0)
+#def turnLeft():
+ #   move(5, 10, 7.5, 17.5)
+def turnLeft():
+    move(60, 90)
+
+def move(ang1, ang2):
+            pwm_servoL.start(set_duty_cycle(ang1))
+            pwm_servoR.start(set_duty_cycle(ang2))
+            time.sleep(1)
+                       
+         
+
+  
+def distance(trig, echo):
+    GPIO.output(trig, True)
+    time.sleep(0.00001)
+    GPIO.output(trig, False)
+    
+    valid = True
+    RefTime = time.time()
+    StartTime = RefTime
+    while (GPIO.input(echo) == 0) and (StartTime-RefTime < 0.1):
+        StartTime = time.time()
+    if (StartTime-RefTime >= 0.1):
+        valid = False
+ 
+    if (valid):
+        RefTime = time.time()
+        StopTime = time.time()
+        while (GPIO.input(echo) == 1) and (StopTime-RefTime < 0.1):
+            StopTime = time.time()
+        if (StopTime-RefTime >= 0.1):
+            valid = False
+  
+    if (valid):
+        EchoPulseLength = StopTime - StartTime
+        return (EchoPulseLength * 34300) / 2
+    else:
+        return 0
+
+
+myPath = turtle.Turtle()
+myPath.width(10)
+myPath.pencolor("green")
+myPath.left(90)
+
+def pathMaker(turtle,pathDis, degree):
+    turtle.forward(pathDis)
+    turtle.left(degree)
+    return(turtle.xcor(), turtle.ycor())
+
+def getExtremeVal(arr, stringInf, index): #arr = array with coordinates, stringInf = "inf" if looking for smallest value, 
+    extrCoor = float(stringInf)          #"-inf" if looking for largest value; index = 0, if largest/smallest val for x coordinates 
+    for i in range(len(arr)):
+        if stringInf == "inf":           # index = 1 if largest/smallest val for y coordinates
+            if arr[i][index] <= extrCoor:
+                extrCoor = arr[i][index]
+        else:
+            if arr[i][index] >= extrCoor:
+                extrCoor = arr[i][index]
+    return extrCoor
+
+def compareVal(a,b):
+    if a >= b:
+        return a
+    else:
+        return b
+    
+def transPathtoPic(im, arr):
+    #connect the dots
+    newArr = list([])
+    for i in range(len(arr)):
+        newCoor = (int(arr[i][0] + compareVal(x1, x2)), int(arr[i][1] + compareVal(y1,y2)))
+        newArr.append(newCoor)
+    try:                    
+        for count in range(len(newArr)):
+            if newArr[count][1] != newArr[count+1][1]:  #change in y
+                if newArr[count][1] > newArr[count+1][1]:
+                    # if going down
+                    a = newArr[count][1] - newArr[count+1][1]
+                    for c in range(a):
+                        for i in range(10):
+                            im.putpixel((newArr[count][0] + i, newArr[count][1] - c), (0,255,0))
+                else:
+                    #going up
+                    a = newArr[count+1][1] - newArr[count][1]
+                    for c in range(a):
+                        for i in range(10):
+                            im.putpixel((newArr[count][0] + i, newArr[count][1] + c), (0,255,0))
+            elif newArr[count][0] != newArr[count+1][0]:
+                #change in x
+                if newArr[count][0] > newArr[count+1][0]:
+                    # if going left 
+                    a = newArr[count][0] - newArr[count+1][0]
+                    for c in range(a):
+                        for i in range(10):
+                            im.putpixel((newArr[count][0] - c, newArr[count][1] + i), (0,255,0))
+                    c = c + 1
+                else:
+                    #if going right
+                    a = newArr[count+1][0] - newArr[count][0]
+                    for c in range(a):
+                        for i in range(10):
+                            im.putpixel((newArr[count][0] + c, newArr[count][1] + i), (0,255,0))
+    except:
+        pass
+    
+    return im
+
+
+
+if __name__ == '__main__':
+
+    try:
+        state = 1 
+        myPath.pendown()
+        while True:
+            if state == 1:
+                forward()
+                Rdist = distance(RTriggerP, REchoP)
+                print("right hand distance: {0} cm" .format(Rdist))
+
+                Fdist = distance(FTriggerP, FEchoP)
+                print ("front distance:{0} cm".format(Fdist))
+                coor.append(pathMaker(myPath, 10, 0)) 
+            if Fdist < 30.0 and Fdist !=  0 and state == 1:
+                if Rdist < 25.0 and Rdist !=  0:
+                    state = 2
+                    turnLeft()
+                    coor.append(pathMaker(myPath, 0, 90))
+                    state = 1
+                else:
+                    state = 3
+                    turnRight()
+                    coor.append(pathMaker(myPath, 0, -90))
+                    state = 1
+            else:
+                state = 1
+   
+          
+    except KeyboardInterrupt:
+        print("Program stopped by User")
+        myPath.penup()
+        x1 = abs( (getExtremeVal(coor, "-inf", 0)) ) #-> largest num in array base on x coordinates
+        x2 = abs( (getExtremeVal(coor, "inf", 0)) ) #-> smallest num based on x coors
+        y1 = abs( (getExtremeVal(coor, "-inf", 1)) ) #-> largest num based on y coors
+        y2 = abs( (getExtremeVal(coor, "inf", 1)) ) #-> smallest num based on y coor
+        gameBk = Image.new("RGB",(2 * int(x1+x2) + 20, 2* int(y1+y2)+ 20) , (0,0,0))
+        gameMap = transPathtoPic(gameBk, coor)
+        gameMap.save("gameMap.jpg")
+        GPIO.cleanup()
+
+
