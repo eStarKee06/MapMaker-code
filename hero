@@ -1,5 +1,0 @@
-from PIL import Image
-
-hero = Image.new('RGB', (5,5), (255, 0, 0))
-
-hero.save("hero.jpg")
